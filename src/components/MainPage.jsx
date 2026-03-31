@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Background } from "./Background";
 import Button from "./Button";
 
-function MainPage({ onClick, onScroll, isClicked, code, price }) {
+function MainPage({ onClick, onScroll, code, price }) {
   const [animate, setAnimate] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -18,23 +18,27 @@ function MainPage({ onClick, onScroll, isClicked, code, price }) {
         copiedTimeoutRef.current = setTimeout(() => {
           setCopied(false);
         }, 1000);
-      } catch (err) {
-        console.error("Error copiando con Clipboard API:", err);
+      } catch (error) {
+        console.error("Error copiando con Clipboard API:", error);
       }
     }
   };
 
-  const handleScrollClick = (e) => {
-    e.stopPropagation();
-    setAnimate((prev) => !prev);
+  const handleScrollClick = (event) => {
+    event.stopPropagation();
+    setAnimate((previous) => !previous);
 
     if (!hasScrolled) {
       onScroll();
       setHasScrolled(true);
-    } else {
-      if (onClick) onClick();
-      setHasScrolled(false);
+      return;
     }
+
+    if (onClick) {
+      onClick();
+    }
+
+    setHasScrolled(false);
   };
 
   return (
@@ -43,11 +47,11 @@ function MainPage({ onClick, onScroll, isClicked, code, price }) {
         <div className="discount-code-container">
           <div className="discount-text-container">
             <div className="daniel-te-regala"></div>
-            <h4 className="price-text" 
-            style={{ color: useAltColor ? "#4E3718" : "#EFA52E" }}
+            <h4
+              className="price-text"
+              style={{ color: useAltColor ? "#4E3718" : "#EFA52E" }}
             >
-              {price ? `${price}` : "\u00A0"}
-              {/* PAPAS FREE */}
+              {price || "\u00A0"}
             </h4>
           </div>
           <Button
@@ -55,7 +59,7 @@ function MainPage({ onClick, onScroll, isClicked, code, price }) {
             onPointerDown={() => setIsPressed(true)}
             onPointerUp={() => {
               setIsPressed(false);
-              setUseAltColor((prev) => !prev); // alternar color
+              setUseAltColor((previous) => !previous);
               handleDiscountClick();
             }}
           >
@@ -75,13 +79,13 @@ function MainPage({ onClick, onScroll, isClicked, code, price }) {
         <div className="button-container">
           <Button
             className="btn btn-main-page"
-            onPointerUp={(e) => {
-              if (e.pointerType === "mouse" || e.pointerType === "touch") {
-                handleScrollClick(e);
+            onPointerUp={(event) => {
+              if (event.pointerType === "mouse" || event.pointerType === "touch") {
+                handleScrollClick(event);
               }
             }}
           >
-            {hasScrolled ? "VOLVER AL CÓDIGO" : "¿Que hago con el código?"}
+            {hasScrolled ? "VOLVER AL CODIGO" : "¿Que hago con el codigo?"}
           </Button>
         </div>
       </div>

@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import { claimDiscount } from "./js/claimDiscount";
+import { useEffect, useRef, useState } from "react";
 import LoadingPage from "./components/LoadingPage";
 import MainPage from "./components/MainPage";
 import TermsPage from "./components/TermsPage";
+import { claimDiscount } from "./js/claimDiscount";
 
 function App() {
   const [code, setCode] = useState(null);
@@ -12,71 +12,74 @@ function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [initialLoadTriggered, setInitialLoadTriggered] = useState(false);
-
   const [translateY, setTranslateY] = useState(100);
   const [initialLoad, setInitialLoad] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
   const [showMain, setShowMain] = useState(true);
   const [showLoading, setShowLoading] = useState(true);
   const [goToLoading, setGoToLoading] = useState(false);
-  const [isClicked, setIsClicked] = useState(true);
   const sectionsRef = useRef(null);
 
   const scrollToY = (vh) => setTranslateY(vh);
 
-  // Escuchar cuando la página y assets hayan cargado completamente
   useEffect(() => {
     const handleAssetsLoaded = () => {
-      console.log("✅ Todos los assets han cargado.");
       setAssetsLoaded(true);
     };
 
     if (document.readyState === "complete") {
       handleAssetsLoaded();
-    } else {
-      window.addEventListener("load", handleAssetsLoaded);
-      return () => window.removeEventListener("load", handleAssetsLoaded);
+      return undefined;
     }
+
+    window.addEventListener("load", handleAssetsLoaded);
+    return () => window.removeEventListener("load", handleAssetsLoaded);
   }, []);
 
-  // Cargar código y detectar errores al iniciar
   useEffect(() => {
-    const fetchCode = async () => {
-      console.log("🔍 Llamando a claimDiscount...");
-      const res = await claimDiscount();
-      console.log("🧾 Resultado de claimDiscount:", res);
+    let isMounted = true;
 
-      if (res.error) {
-        setHasError(true);
-        setMessage("Tenés que entrar desde un celular");
+    const fetchCode = async () => {
+      const result = await claimDiscount();
+
+      if (!isMounted) {
         return;
       }
-      
-      setCode(res.code);
-      setPrice(res.price);
-      // 👇 No seteamos ningún mensaje si no hubo error
-      setMessage(""); 
+
+      if (result.error) {
+        setHasError(true);
+        setMessage(result.error);
+        return;
+      }
+
+      setCode(result.code);
+      setPrice(result.price);
+      setMessage("");
       setDataLoaded(true);
     };
 
     fetchCode();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Lógica para activar la animación solo cuando:
-  // - NO hay errores
-  // - Se terminó de cargar data y assets
   useEffect(() => {
     if (!hasError && dataLoaded && assetsLoaded && !initialLoadTriggered) {
-      console.log("🚀 Todo listo, lanzando animación de entrada.");
       setInitialLoadTriggered(true);
-      setTimeout(() => {
+
+      const timeoutId = window.setTimeout(() => {
         scrollToY(0);
         setInitialLoad(false);
       }, 400);
-    }
-  }, [hasError, dataLoaded, assetsLoaded, initialLoadTriggered]);
 
-  // Manejo de transiciones secundarias
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    return undefined;
+  }, [assetsLoaded, dataLoaded, hasError, initialLoadTriggered]);
+
   useEffect(() => {
     const handleTransitionEnd = () => {
       if (translateY === 220 && goToLoading) {
@@ -93,40 +96,26 @@ function App() {
 
     const node = sectionsRef.current;
     node?.addEventListener("transitionend", handleTransitionEnd);
+
     return () => node?.removeEventListener("transitionend", handleTransitionEnd);
-  }, [translateY, initialLoad, goToLoading]);
+  }, [goToLoading, initialLoad, translateY]);
 
   const handleMainClick = () => {
     if (translateY === 78) {
-      setIsClicked(false);
       scrollToY(0);
     }
   };
 
-  // const handleTransitionToLoading = () => {
-  //   setShowLoading(true);
-  //   setGoToLoading(true);
-
-  //   setTimeout(() => {
-  //     scrollToY(200);
-  //   }, 600);
-
-  //   setTimeout(() => {
-  //     // window.location.href = 'https://www.instagram.com/shaffers.co/';
-  //     window.open('https://www.instagram.com/shaffers.co/', '_blank');
-  //     // location.reload();
-  //   }, 1500);
-  // };
   const handleTransitionToLoading = () => {
     setShowLoading(true);
     setGoToLoading(true);
-  
-    setTimeout(() => {
+
+    window.setTimeout(() => {
       scrollToY(200);
     }, 600);
-  
-    setTimeout(() => {
-      window.location.href = 'https://www.instagram.com/shaffers.co/';
+
+    window.setTimeout(() => {
+      window.location.href = "https://www.instagram.com/shaffers.co/";
     }, 1500);
   };
 
@@ -140,26 +129,16 @@ function App() {
         {showMain && (
           <MainPage
             onClick={handleMainClick}
-            onScroll={() => {
-              setIsClicked(true);
-              scrollToY(78);
-            }}
-            isClicked={isClicked}
+            onScroll={() => scrollToY(78)}
             code={code}
             price={price}
           />
         )}
-        {showTerms && (
-          <TermsPage
-            onGoToLoading={handleTransitionToLoading}
-            isClicked={isClicked}
-          />
-        )}
+        {showTerms && <TermsPage onGoToLoading={handleTransitionToLoading} />}
         {showLoading && <LoadingPage message={hasError ? message : ""} />}
       </div>
     </div>
   );
-  
 }
 
 export default App;

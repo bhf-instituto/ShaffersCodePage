@@ -1,41 +1,41 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import * as fs from 'fs';
+import { getAdminDb } from "./firebaseAdmin.js";
 
-// Cargar la clave privada
-const serviceAccount = JSON.parse(fs.readFileSync('serviceAccountKey.json', 'utf8'));
+const db = getAdminDb();
 
-// Inicializar Firebase Admin
-initializeApp({
-  credential: cert(serviceAccount)
-});
-
-const db = getFirestore();
-
-// 🔸 Ingresá los códigos acá como un array de objetos:
 const codes = [
-  { code: 'SH-9X3K2L', price: 'PAPAS EXTRA', claimed: false },
-  { code: 'SH-Y8J4D1', price: 'MEDALLON EXTRA', claimed: false },
-  { code: 'SH-V3B7N9', price: 'MEDALLON EXTRA', claimed: false },
-  { code: 'SH-W6Z2K8', price: '10% OFF', claimed: false },
-  { code: 'SH-P9J1A2', price: '10% OFF', claimed: false },
-  { code: 'SH-Q3M4N5', price: '10% OFF', claimed: false },
-  { code: 'SH-F9V5G1', price: '10% OFF', claimed: false },
-  { code: 'SH-A1R2D9', price: '10% OFF', claimed: false },
-  { code: 'SH-T8L5X3', price: '10% OFF', claimed: false },
-  { code: 'SH-B4Y6E7', price: '10% OFF', claimed: false }
+  { code: "SH-9X3K2L", price: "PAPAS EXTRA" },
+  { code: "SH-Y8J4D1", price: "MEDALLON EXTRA" },
+  { code: "SH-V3B7N9", price: "MEDALLON EXTRA" },
+  { code: "SH-W6Z2K8", price: "10% OFF" },
+  { code: "SH-P9J1A2", price: "10% OFF" },
+  { code: "SH-Q3M4N5", price: "10% OFF" },
+  { code: "SH-F9V5G1", price: "10% OFF" },
+  { code: "SH-A1R2D9", price: "10% OFF" },
+  { code: "SH-T8L5X3", price: "10% OFF" },
+  { code: "SH-B4Y6E7", price: "10% OFF" },
 ];
 
 async function seedCodes() {
   const batch = db.batch();
 
   codes.forEach((data) => {
-    const docRef = db.collection('discountCodes').doc(); // 🔥 ID automática
-    batch.set(docRef, data);
+    const docRef = db.collection("discountCodes").doc(data.code);
+
+    batch.set(
+      docRef,
+      {
+        code: data.code,
+        price: data.price,
+        claimed: false,
+        assignmentsCount: 0,
+        lastAssignedAt: null,
+      },
+      { merge: true }
+    );
   });
 
   await batch.commit();
-  console.log(`${codes.length} códigos cargados exitosamente ✅`);
+  console.log(`${codes.length} codigos cargados correctamente.`);
 }
 
 seedCodes().catch(console.error);
