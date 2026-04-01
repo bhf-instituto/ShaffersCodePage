@@ -69,7 +69,7 @@ function App() {
       const timeoutId = window.setTimeout(() => {
         scrollToY(0);
         setInitialLoad(false);
-      }, 100);
+      }, 100 );
 
       return () => window.clearTimeout(timeoutId);
     }
