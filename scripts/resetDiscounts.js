@@ -22,9 +22,9 @@ async function resetDiscounts() {
     batch.set(
       document.ref,
       {
-        claimed: false,
-        assignmentsCount: 0,
-        lastAssignedAt: null,
+        assigned: false,
+        assignedAt: null,
+        assignedToUid: null,
       },
       { merge: true }
     );
@@ -33,6 +33,7 @@ async function resetDiscounts() {
   await batch.commit();
   console.log(`${discountSnapshot.size} codigos reiniciados.`);
 
+  await deleteCollection("codeAssignments");
   await deleteCollection("claims");
   await deleteCollection("logs");
 }

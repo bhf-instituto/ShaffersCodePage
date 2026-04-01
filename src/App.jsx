@@ -11,7 +11,6 @@ function App() {
   const [hasError, setHasError] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
-  const [initialLoadTriggered, setInitialLoadTriggered] = useState(false);
   const [translateY, setTranslateY] = useState(100);
   const [initialLoad, setInitialLoad] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
@@ -66,19 +65,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!hasError && dataLoaded && assetsLoaded && !initialLoadTriggered) {
-      setInitialLoadTriggered(true);
-
+    if (!hasError && dataLoaded && assetsLoaded && initialLoad) {
       const timeoutId = window.setTimeout(() => {
         scrollToY(0);
         setInitialLoad(false);
-      }, 400);
+      }, 100);
 
       return () => window.clearTimeout(timeoutId);
     }
 
     return undefined;
-  }, [assetsLoaded, dataLoaded, hasError, initialLoadTriggered]);
+  }, [assetsLoaded, dataLoaded, hasError, initialLoad]);
 
   useEffect(() => {
     const handleTransitionEnd = () => {
@@ -91,6 +88,7 @@ function App() {
 
       if (translateY === 0 && !initialLoad) {
         setShowTerms(true);
+        setShowLoading(false);
       }
     };
 

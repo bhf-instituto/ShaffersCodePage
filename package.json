@@ -1,6 +1,5 @@
 {
   "name": "shafferscodepage",
-  "homepage": "https://bbhhffdesign.design.io/ShaffersCodePage",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,11 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run build && firebase deploy --only hosting,functions,firestore",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
     "firebase": "^11.6.0",
-    "gh-pages": "^6.3.0",
     "normalize.css": "^8.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

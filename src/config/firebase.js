@@ -1,4 +1,6 @@
 import { initializeApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { getAuth } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
@@ -13,5 +15,23 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY;
+const appCheckDebugToken = import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN;
 
-export const functions = getFunctions(app);
+if (appCheckSiteKey) {
+  if (appCheckDebugToken) {
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = appCheckDebugToken;
+  }
+
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
+
+export const auth = getAuth(app);
+export const functions = getFunctions(
+  app,
+  import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION ?? "us-central1"
+);
+export const isAppCheckConfigured = Boolean(appCheckSiteKey);

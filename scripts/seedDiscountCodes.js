@@ -26,9 +26,9 @@ async function seedCodes() {
       {
         code: data.code,
         price: data.price,
-        claimed: false,
-        assignmentsCount: 0,
-        lastAssignedAt: null,
+        assigned: false,
+        assignedAt: null,
+        assignedToUid: null,
       },
       { merge: true }
     );

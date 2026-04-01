@@ -7,7 +7,7 @@
     "node": "20"
   },
   "scripts": {
-    "serve": "firebase emulators:start --only functions",
+    "serve": "firebase emulators:start --only functions,firestore,auth,hosting",
     "deploy": "firebase deploy --only functions"
   },
   "dependencies": {
